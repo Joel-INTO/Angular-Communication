@@ -2,6 +2,8 @@ import { Component, OnInit, ViewChild, AfterViewInit, ElementRef } from '@angula
 import { IProduct } from './product';
 import { ProductService } from './product.service';
 import { NgModel } from '@angular/forms';
+import { Subscribable } from 'rxjs/Observable';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
     templateUrl: './product-list.component.html',
@@ -17,6 +19,7 @@ export class ProductListComponent implements OnInit, AfterViewInit {
 
     @ViewChild('filterElement') filterElementRef: ElementRef;
     @ViewChild(NgModel) filterInput: NgModel;
+    private _sub: Subscription;
 
     listFilter: string;
 
@@ -26,10 +29,11 @@ export class ProductListComponent implements OnInit, AfterViewInit {
     constructor(private productService: ProductService) {}
 
     ngAfterViewInit(): void {
+        this._sub = this.filterInput.valueChanges.subscribe(() => {
+            this.performFilter(this.listFilter);
+            console.log('Performing the filter');
+        });
         this.filterElementRef.nativeElement.focus();
-        this.filterInput.valueChanges.subscribe(
-            () => this.performFilter(this.listFilter)
-        );
     }
 
     ngOnInit(): void {
