@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { IProduct } from './product';
 import { ProductService } from './product.service';
 import { CriteriaComponent } from '../shared/criteria/criteria.component';
+import { ProductParameterService } from './product-parameter.service';
 
 
 @Component({
@@ -10,7 +11,6 @@ import { CriteriaComponent } from '../shared/criteria/criteria.component';
 })
 export class ProductListComponent implements OnInit, AfterViewInit {
     pageTitle: string = 'Product List';
-    showImage: boolean;
     includeDetail: boolean = true;
 
     imageWidth: number = 50;
@@ -18,26 +18,35 @@ export class ProductListComponent implements OnInit, AfterViewInit {
     errorMessage: string;
 
     @ViewChild('filterElement') filterElementRef: ElementRef;
-    @ViewChild(CriteriaComponent) filterComponent: CriteriaComponent;
     parentListFilter: string;
-
 
     filteredProducts: IProduct[];
     products: IProduct[];
+    @ViewChild(CriteriaComponent) filterComponent: CriteriaComponent;
 
-    constructor(private productService: ProductService) {}
+    get showImage(): boolean {
+        return this.productParameterService.showImage;
+    }
+
+    set showImage(value: boolean) {
+        this.productParameterService.showImage = value;
+    }
+
+    constructor(private productService: ProductService,
+                private productParameterService: ProductParameterService) {}
 
     ngOnInit(): void {
         this.productService.getProducts().subscribe(
             (products: IProduct[]) => {
                 this.products = products;
-                this.performFilter(this.parentListFilter);
+                this.filterComponent.listFilter = this.productParameterService.filterBy;
             },
             (error: any) => this.errorMessage = <any>error
         );
     }
 
     onValueChange(value: string): void {
+        this.productParameterService.filterBy = value;
         this.performFilter(value);
     }
 
